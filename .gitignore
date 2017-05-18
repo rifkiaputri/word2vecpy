@@ -3,5 +3,6 @@
 *~
 todo.txt
 /data
+/.idea
 multiprocessing_tests.py
 performance_tests.py
