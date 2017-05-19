@@ -10,11 +10,12 @@ class VocabItem:
 
 
 class Vocab:
-    def __init__(self, fi, min_count):
+    def __init__(self, min_count):
         vocab_items = []
         vocab_hash = {}
         word_count = 0
-        fi = open(fi, 'r', encoding='utf8')
+        self.filename = 'enwik8-clean'
+        fi = open('data/%s' % self.filename, 'r')
 
         # Add special tokens <bol> (beginning of line) and <eol> (end of line)
         for token in ['<bol>', '<eol>']:
@@ -32,7 +33,7 @@ class Vocab:
                 vocab_items[vocab_hash[token]].count += 1
                 word_count += 1
             
-                if word_count % 10000 == 0:
+                if word_count % 100000 == 0:
                     print('Reading word %d' % word_count)
 
             # Add special tokens <bol> (beginning of line) and <eol> (end of line)
@@ -102,27 +103,23 @@ class UnigramTable:
     used to draw negative samples.
     """
     def __init__(self):
-        filename = 'enwik8'
-        vocab = Vocab('data/%s' % filename, 1)
+        vocab = Vocab(1)
         power = 0.75
         norm = sum([math.pow(t.count, power) for t in vocab]) # Normalizing constant
 
         table_size = int(1e8) # Length of the unigram table
         table = np.zeros(table_size, dtype=np.uint32)
 
-        print ('Filling unigram table')
+        print('Filling unigram table')
         p = 0 # Cumulative probability
         i = 0
-        fi = open('data/vocab-list-%s.txt' % filename, 'w', encoding='utf8')
         for j, unigram in enumerate(vocab):
-            fi.write('%d - %s\n' % (j, unigram.word)) # This is for checking vocab parsing result
             p += float(math.pow(unigram.count, power))/norm
             while i < table_size and float(i) / table_size < p:
                 table[i] = j
                 i += 1
         self.table = table
         self.vocab = vocab
-        fi.close()
 
     def sample(self, count):
         """
